@@ -21,15 +21,14 @@ else:
             input ("Please fill out the config file and enter your email address and set up SMTP details")
             quit ()
 
-
 try:
-    urllib.request.urlopen('http://google.com')
+    urllib.request.urlopen('http://google.com')     # Attempts to establish an internet connection so it will be able to connect to the email
 except:
     print ("ERROR - No Internet Connection")
     input ("Press 'Enter' to exit the program")
     quit()
 
-with open ("config.json", "r") as configFile:
+with open ("config.json", "r") as configFile:       # Extracts the information from the config file
     config = json.load(configFile)
     email = config["email"]
     password = config["password"]
@@ -42,25 +41,23 @@ with open ("config.json", "r") as configFile:
 def wasteToner():
     print ("Loaded           ")
     print ("Connecting...", end="\r")
-    emails = EmailHandler.ReadEmail(username=email, password=password, server=server, port=port, fromDaysAgo=daysAgo, emailFolder=inboxFolder) # retreives alerts as emails
+    emails = EmailHandler.ReadEmail(username=email, password=password, server=server, port=port, fromDaysAgo=daysAgo, emailFolder=inboxFolder) # Retreives alerts as emails
     SupressMe = {}
     alerts = {}
-    for i in emails: # loops through all emails
-        if "e-BRIDGE CloudConnect" not in i["subject"]:
+    for i in emails: # Loops through all emails
+        if "e-BRIDGE CloudConnect" not in i["subject"]:     # If the email isn't an ECC alert it skips it
             continue
-        #items = i["body"].split("<br>")
         try:
-            items = i["body"].split("<br>")
-            if len(items) < 5:
-                items = items[0:-2] + items[-1].split("<br=\n>")
-            SerialNumber = items[0].replace("Serial Number: ", "")
-            Customer = items[2].replace("Description: ", "").replace("\n", "")
-            Address = items[3].replace("Address: ", "").replace("\n", "") + ", " + items[4].replace("\n", "")
-            ID = "".join(filter(str.isdigit, items[5].replace("Machine ID: ", "").replace("\n", "")))
-            alerts[SerialNumber] = {"Customer": Customer, "Address": Address, "ID":ID}
+            items = i["body"].split("<br>")                                                                         # Extracts the data needed from the body section of the email dict
+            if len(items) < 5:                                                                                      #
+                items = items[0:-2] + items[-1].split("<br=\n>")                                                    #
+            SerialNumber = items[0].replace("Serial Number: ", "")                                                  #
+            Customer = items[2].replace("Description: ", "").replace("\n", "")                                      #
+            Address = items[3].replace("Address: ", "").replace("\n", "") + ", " + items[4].replace("\n", "")       #
+            ID = "".join(filter(str.isdigit, items[5].replace("Machine ID: ", "").replace("\n", "")))               #
+            alerts[SerialNumber] = {"Customer": Customer, "Address": Address, "ID":ID}                              #
         except Exception as e:
             pass
-            #print (items)
 
             
     try:
@@ -111,16 +108,15 @@ Address: {alerts[i]["Address"]}\n"""
         os.mkdir("output")      # Makes a new folder output for all of the alert txt files
     except: pass
 
-    timeStamp = str(datetime.now().strftime("%Y%m%d-%H%M%S"))   # Creates the time stamp that contains all of the 
+    timeStamp = str(datetime.now().strftime("%Y%m%d-%H%M%S"))   # Creates the time stamp for the output file
     fileName = f"output\\Waste Toner List - {timeStamp}.txt"
-    with open (fileName, "w") as output:
+    with open (fileName, "w") as output:                        # writes the output file to the output folder
         output.write(MultiAlert)
         output.close()
-    # send email
+
     print ()
 
 if __name__ == "__main__":
     wasteToner()
 
-# Allow for manual SN additions to suppress me file
   
